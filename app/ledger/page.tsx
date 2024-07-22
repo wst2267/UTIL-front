@@ -23,11 +23,14 @@ import {
   CalendarProps,
   BadgeProps,
   Badge,
-  Spin
+  Spin,
+  Table,
+  Tag
 } from "antd";
 import {Dayjs} from "dayjs";
 import dayjs from "dayjs";
 import axios from "axios";
+import type { TableProps } from 'antd';
 
 type AddLedgerType = {
   type?: string;
@@ -69,6 +72,7 @@ export default function LedgerPage() {
   ];
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [dataGetinDB, setDataGetInDB] = useState<any>({});
+  const [datasource, setDatasource] = useState<any>([]);
   //test
   useEffect(() => {
     if (isLogin == true) {
@@ -84,10 +88,62 @@ export default function LedgerPage() {
     var ledger = await axios.get(`https://util-api-lb2y.onrender.com/api/ledger/getledger?userName=${username}`);
     if (ledger.data != null) {
       setDataGetInDB(ledger.data)
+      //console.log("ledger.data: ", ledger.data)
+      // set datasource 
+      var datasource: any[] = []
+      var index: number = 1;
+      ledger.data.forEach((element: any) => {
+        element.ledgerDetails.forEach((detail: any) => {
+          var data = {
+            key: (index).toLocaleString(),
+            ledgerNote: `${detail.ledgerNote} ${detail.ledgerValue} บาท`, // ทิ้ง 10000 บาท
+            tag: [ detail.ledgerType ] 
+          }
+          datasource.push(data)
+          index += 1;
+        });
+        setDatasource(datasource)
+        //console.log("datasource: ", datasource)
+      })
+
       calculateTotal(selectedDate.format("YYYY-MM-DD"), ledger.data)
       setIsLoading(false)
     }
   }
+
+  const columns: TableProps<any>['columns'] = [
+    {
+      title: 'รายการ',
+      dataIndex: 'ledgerNote',
+      key: 'ledgerNote'
+    },
+    {
+      title: 'ประเภท',
+      dataIndex: 'ประเภท',
+      key: 'tag',
+      render: (_, {tag}) => {
+        return <>
+          {tag.map((t: any) => {
+            let color = "";
+            let typeName = ""
+            if (t == "income") {
+              color = "#87d068"
+              typeName = "รายรับ"
+            }
+            else {
+              color = '#f50';
+              typeName = "รายจ่าย"
+            }
+            return (
+              <Tag color={color} key={tag}>
+                {typeName}
+              </Tag>
+            );
+          })}
+        </>;
+      }
+    },
+  ]
 
   const openUserModal = () => {
     Modal.info({
@@ -351,6 +407,12 @@ export default function LedgerPage() {
               );
             }}
           />
+        </Col>
+      </Row>
+
+      <Row gutter={{xs: 8, sm: 16, md: 24, lg: 2}}>
+        <Col xs={24} sm={24} md={24} lg={24} xl={24} span={24}>
+          <Table columns={columns} dataSource={datasource} />
         </Col>
       </Row>
     </Spin>

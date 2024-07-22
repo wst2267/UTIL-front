@@ -96,7 +96,8 @@ export default function LedgerPage() {
         element.ledgerDetails.forEach((detail: any) => {
           var data = {
             key: (index).toLocaleString(),
-            ledgerNote: `${detail.ledgerNote} ${detail.ledgerValue} บาท`, // ทิ้ง 10000 บาท
+            ledgerNote: `${detail.ledgerNote}`, 
+            ledgerValue: `${detail.ledgerValue} บาท`,
             tag: [ detail.ledgerType ] 
           }
           datasource.push(data)
@@ -118,31 +119,36 @@ export default function LedgerPage() {
       key: 'ledgerNote'
     },
     {
-      title: 'ประเภท',
-      dataIndex: 'ประเภท',
-      key: 'tag',
-      render: (_, {tag}) => {
-        return <>
-          {tag.map((t: any) => {
-            let color = "";
-            let typeName = ""
-            if (t == "income") {
-              color = "#87d068"
-              typeName = "รายรับ"
-            }
-            else {
-              color = '#f50';
-              typeName = "รายจ่าย"
-            }
-            return (
-              <Tag color={color} key={tag}>
-                {typeName}
-              </Tag>
-            );
-          })}
-        </>;
-      }
+      title: 'จำนวน',
+      dataIndex: 'ledgerValue',
+      key: 'ledgerValue'
     },
+    // {
+    //   title: 'ประเภท',
+    //   dataIndex: 'ประเภท',
+    //   key: 'tag',
+    //   render: (_, {tag}) => {
+    //     return <>
+    //       {tag.map((t: any) => {
+    //         let color = "";
+    //         let typeName = ""
+    //         if (t == "income") {
+    //           color = "#87d068"
+    //           typeName = "รายรับ"
+    //         }
+    //         else {
+    //           color = '#f50';
+    //           typeName = "รายจ่าย"
+    //         }
+    //         return (
+    //           <Tag color={color} key={tag}>
+    //             {typeName}
+    //           </Tag>
+    //         );
+    //       })}
+    //     </>;
+    //   }
+    // },
   ]
 
   const openUserModal = () => {
@@ -412,7 +418,16 @@ export default function LedgerPage() {
 
       <Row gutter={{xs: 8, sm: 16, md: 24, lg: 2}}>
         <Col xs={24} sm={24} md={24} lg={24} xl={24} span={24}>
-          <Table columns={columns} dataSource={datasource} />
+          <Table columns={columns} dataSource={datasource}
+          rowClassName={(record, index) => {
+            if (record.tag == "income") {
+              return "bg-green-500"
+            }
+            else {
+              return "bg-red-500"
+            }
+          }}
+          />
         </Col>
       </Row>
     </Spin>

@@ -88,28 +88,36 @@ export default function LedgerPage() {
     var ledger = await axios.get(`https://util-api-lb2y.onrender.com/api/ledger/getledger?userName=${username}`);
     if (ledger.data != null) {
       setDataGetInDB(ledger.data)
-      //console.log("ledger.data: ", ledger.data)
-      // set datasource 
-      var datasource: any[] = []
-      var index: number = 1;
-      ledger.data.forEach((element: any) => {
-        element.ledgerDetails.forEach((detail: any) => {
-          var data = {
-            key: (index).toLocaleString(),
-            ledgerNote: `${detail.ledgerNote}`, 
-            ledgerValue: `${detail.ledgerValue} บาท`,
-            tag: [ detail.ledgerType ] 
-          }
-          datasource.push(data)
-          index += 1;
-        });
-        setDatasource(datasource)
-        //console.log("datasource: ", datasource)
-      })
 
+      getTableData(selectedDate.format("YYYY-MM-DD"), ledger.data)
       calculateTotal(selectedDate.format("YYYY-MM-DD"), ledger.data)
       setIsLoading(false)
     }
+  }
+
+  const getTableData = (date: string, tableData: any) => {
+    var datasource: any[] = []
+    var index: number = 1;
+    var filterData = tableData.filter((x: any) => dayjs(x.ledgerDate).get('month') == dayjs(date).month() && dayjs(x.ledgerDate).get('year') == dayjs(date).year())
+    if (filterData.length == 0) {
+      setDatasource([])
+      return;
+    }
+    console.log("filterData:", filterData)
+
+    filterData.forEach((element: any) => {
+      element.ledgerDetails.forEach((detail: any) => {
+        var data = {
+          key: (index).toLocaleString(),
+          ledgerNote: `${detail.ledgerNote}`, 
+          ledgerValue: `${detail.ledgerValue.toLocaleString().replace(/\d(?=(\d{3})+\.)/g, '$&,')} บาท`,
+          tag: [ detail.ledgerType ] 
+        }
+        datasource.push(data)
+        index += 1;
+      });
+      setDatasource(datasource)
+    })
   }
 
   const columns: TableProps<any>['columns'] = [
@@ -173,7 +181,7 @@ export default function LedgerPage() {
     var income = 0;
     var expenses = 0;
     if (data != null) {
-        var filterData = data.filter((x: any) => dayjs(x.ledgerDate).get('month') == dayjs(date).month())
+        var filterData = data.filter((x: any) => dayjs(x.ledgerDate).get('month') == dayjs(date).month() && dayjs(x.ledgerDate).get('year') == dayjs(date).year())
         filterData.forEach((ledger: any) => {
             ledger.ledgerDetails.forEach((ledgernote: any) => {
                 if (ledgernote.ledgerType == "income") {
@@ -239,6 +247,8 @@ export default function LedgerPage() {
     setSelectedDate(newValue);
     //console.log("onPanelChange: ", newValue.format("YYYY-MM-DD"));
     calculateTotal(newValue.format("YYYY-MM-DD"), dataGetinDB)
+    console.log("dataGetinDB: ", dataGetinDB)
+    getTableData(newValue.format("YYYY-MM-DD"), dataGetinDB)
   };
 
   const getListData = (value: Dayjs) => {

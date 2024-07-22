@@ -247,7 +247,6 @@ export default function LedgerPage() {
     setSelectedDate(newValue);
     //console.log("onPanelChange: ", newValue.format("YYYY-MM-DD"));
     calculateTotal(newValue.format("YYYY-MM-DD"), dataGetinDB)
-    console.log("dataGetinDB: ", dataGetinDB)
     getTableData(newValue.format("YYYY-MM-DD"), dataGetinDB)
   };
 

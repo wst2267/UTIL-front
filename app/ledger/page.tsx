@@ -23,6 +23,7 @@ import {
   CalendarProps,
   BadgeProps,
   Badge,
+  Spin
 } from "antd";
 import {Dayjs} from "dayjs";
 import dayjs from "dayjs";
@@ -79,10 +80,12 @@ export default function LedgerPage() {
   }, [isLogin]);
 
   async function GetDataLedger(username: string) {
+    setIsLoading(true)
     var ledger = await axios.get(`https://util-api-lb2y.onrender.com/api/ledger/getledger?userName=${username}`);
     if (ledger.data != null) {
       setDataGetInDB(ledger.data)
       calculateTotal(selectedDate.format("YYYY-MM-DD"), ledger.data)
+      setIsLoading(false)
     }
   }
 
@@ -225,7 +228,8 @@ export default function LedgerPage() {
 
   return (
     <>
-      <Row gutter={{xs: 8, sm: 16, md: 24, lg: 2}}>
+    <Spin spinning={isLoading}>
+    <Row gutter={{xs: 8, sm: 16, md: 24, lg: 2}}>
         <Col xs={24} sm={24} md={8} lg={8} xl={8} span={8}>
           <Card bordered={false}>
             <Statistic
@@ -349,6 +353,8 @@ export default function LedgerPage() {
           />
         </Col>
       </Row>
+    </Spin>
+      
 
       <Modal
         title="Add"
